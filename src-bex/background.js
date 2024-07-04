@@ -3,42 +3,6 @@ let height = 0;
 let url;
 let text;
 
-/*
-import { createRxDatabase, addRxPlugin } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
-import { RxDBMigrationPlugin } from 'rxdb/plugins/migration-schema';
-import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
-import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
-import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
-
-addRxPlugin(RxDBJsonDumpPlugin);
-addRxPlugin(RxDBUpdatePlugin);
-addRxPlugin(RxDBMigrationPlugin);
-addRxPlugin(RxDBAttachmentsPlugin);
-
-const encryptedDexieStorage = wrappedKeyEncryptionCryptoJsStorage({
-  storage: getRxStorageDexie(),
-});
-
-(async () => {
-
-const database = await createRxDatabase({
-  name: 'darren@visualagents.ai-6655c729a5-database',
-  storage: encryptedDexieStorage,
-  password: 'auth0|6655c729a56aca454540206b',
-  multiInstance: true,
-  ignoreDuplicate: true,
-}).catch((err) => {
-  console.log('ERR', err);
-});
-
-//const foundDocuments = await database.files.find().exec();
-console.log('DATABASE',database)
-
-})()
-*/
-
 chrome.tabs.onActivated.addListener( function(activeInfo){
   console.log('TAB CHANGE')
   chrome.tabs.get(activeInfo.tabId, function(tab){
@@ -76,6 +40,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.log('BACKGROUND GOT screen.size', request.width,request.height);
     width = request.width;
     height = request.height;
+  }
+  if (request.action === 'resend.page.text') {
+    chrome.tabs.query({}, function(tabs){
+      tabs.forEach(tab => {
+        try {
+          chrome.tabs.sendMessage(tab.id, {action: "set.page.text", text: text});
+        } catch (err) {
+          console.log('No listener')
+        }
+      })
+    });
   }
   if (request.action === "page.text") {
     if(request.text && (request.text.indexOf('Hi. How can I help today?') === -1 && request.text !== '')) {

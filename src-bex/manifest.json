@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "VisualAgents",
+  "name": "Visual Agents",
   "short_name":"VisAge",
   "icons": {
     "16": "images/u16.png",
@@ -37,7 +37,8 @@
   "action": {
     "default_icon": {
       "16": "images/u16.png",
-      "48": "images/u48.png"
+      "48": "images/u48.png",
+      "128": "images/u128.png"
     },
     "default_popup": "dist/bex/www/index.html"
   },

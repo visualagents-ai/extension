@@ -10,10 +10,16 @@ console.log('CONTENT SCRIPT LOADED')
 window.onload = () => {
   let text = document.body.innerText
   console.log('SENDING PAGE TEXT',text)
-  chrome.runtime.sendMessage({
-    action: "page.text",
-    text:text
-  });
+  if(text && (text.indexOf('Hi. How can I help today?') === -1 && text !== '')) {
+    chrome.runtime.sendMessage({
+      action: "page.text",
+      text: text
+    });
+  } else {
+    chrome.runtime.sendMessage({
+      action: "resend.page.text"
+    });
+  }
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
