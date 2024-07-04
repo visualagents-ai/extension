@@ -1,41 +1,4 @@
-# Chrome Extension (crx)
+# Visual Agents Chrome Companion
 
-Chrome Extension
-
-## Install the dependencies
-```bash
-yarn
-# or
-npm install
-```
-
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-```bash
-quasar dev
-```
-
-
-### Lint the files
-```bash
-yarn lint
-# or
-npm run lint
-```
-
-
-### Format the files
-```bash
-yarn format
-# or
-npm run format
-```
-
-
-
-### Build the app for production
-```bash
-quasar build
-```
-
-### Customize the configuration
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+Install as a chrome browser extension and runs your visual agents chat flows to answer questions and perform tasks on the given web page or app.
+In this way, the browser extension (we call it a companion because it  interacts with you to help you accomplish tasks), can provide additive value to all your web activities in a safe and trusted manner.
