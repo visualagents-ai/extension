@@ -10,7 +10,7 @@
 
   "version": "0.1.0",
   "options_ui": {
-    "page": "dist/bex/www/index.html"
+    "page": "dist/www/index.html"
   },
   "permissions": [
     "storage",
@@ -19,7 +19,7 @@
     "activeTab"
   ],
   "background": {
-    "service_worker": "dist/bex/background.js",
+    "service_worker": "dist/background.js",
     "type": "module"
   },
 
@@ -40,7 +40,7 @@
       "48": "icons/u48.png",
       "128": "icons/u128.png"
     },
-    "default_popup": "dist/bex/www/index.html"
+    "default_popup": "dist/www/index.html"
   },
   "web_accessible_resources": [
     {
