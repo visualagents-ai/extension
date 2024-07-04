@@ -17,6 +17,7 @@ lint:
 .PHONY: clean
 clean:
 	quasar clean
+	rm -rf src-bex/dist
 
 .PHONY: update
 update:

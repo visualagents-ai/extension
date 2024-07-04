@@ -4,9 +4,7 @@ let url;
 let text;
 
 chrome.tabs.onActivated.addListener( function(activeInfo){
-  console.log('TAB CHANGE')
   chrome.tabs.get(activeInfo.tabId, function(tab){
-    console.log('NEW URL', tab.url)
     url = tab.url;
     chrome.tabs.sendMessage(tab.id, {action: "get.page.text"});
 
@@ -30,14 +28,12 @@ chrome.tabs.onUpdated.addListener((tabId, change, tab) => {
 
 chrome.tabs.getCurrent(function (tab) {
   if(tab) {
-    console.log('BG TAB URL', tab.url)
     url = tab.url;
   }
 });
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === "screen.size") {
-    console.log('BACKGROUND GOT screen.size', request.width,request.height);
     width = request.width;
     height = request.height;
   }
@@ -55,7 +51,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === "page.text") {
     if(request.text && (request.text.indexOf('Hi. How can I help today?') === -1 && request.text !== '')) {
       text = request.text;
-      console.log('PAGE TEXT', text)
       chrome.tabs.query({}, function(tabs){
         tabs.forEach(tab => {
           try {
@@ -72,7 +67,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     sendResponse({text:text});
   }
   if (request.action === "get.url") {
-    console.log('BACKGROUND URL', url)
     sendResponse({url:url});
   }
   if (request.action === "get.screen.size")
@@ -81,5 +75,5 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 });
 
-export default function() { console.log("hello!") }
+export default function() { console.log("Ready!") }
 

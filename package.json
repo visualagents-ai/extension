@@ -5,6 +5,9 @@
   "productName": "Visual Agents",
   "author": "Visual Agents <info@visualagents.ai>",
   "private": true,
+  "override": {
+    "ws": "8.17.1"
+  },
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
     "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",
@@ -18,6 +21,7 @@
     "browserfy": "^1.0.0",
     "events": "^3.3.0",
     "quasar": "^2.16.0",
+    "rxdb": "^15.24.0",
     "vue": "^3.4.18",
     "vue-router": "^4.0.12"
   },

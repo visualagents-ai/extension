@@ -104,51 +104,37 @@ addRxPlugin(RxDBAttachmentsPlugin);
 
 bexBackground((bridge) => {
   // Hook into the bridge to listen for events sent from the client BEX.
-  console.log("BRIDGE ON");
   bridge.on("screen.size", (event) => {
     console.log("SCREEN SIZE", event);
   });
 });
-
-console.log("BEX CONTENT");
 
 defineOptions({
   name: "MainLayout",
   async mounted() {
     var me = this;
     this.login();
-    console.log("AUTHENTICATED", this.isAuthenticated);
     me.loading = false;
     chrome.runtime.sendMessage(
       { action: "get.screen.size" },
       function (response) {
-        console.log("POPUP GOT SCREEN", response);
-
         me.screenWidth = response.width;
         me.screenHeight = response.height;
-        console.log("POPUP SCREEN", me.screenWidth, me.screenHeight);
       }
     );
-    console.log("REQUESTED URL");
     chrome.runtime.sendMessage({ action: "get.url" }, function (response) {
       me.url = response.url;
-      console.log("POPUP GOT URL", me.url);
     });
     chrome.runtime.sendMessage(
       { action: "get.page.text" },
       function (response) {
         me.pagetext = response.text;
-        console.log("POPUP GOT PAGE TEXT", me.pagetext);
       }
     );
   },
   computed: {
     isAuthenticated() {
       // @ts-ignore
-      console.log("USER", this.$root.$auth0.user);
-      //if (this.$root.$auth0.user && this.$root.$auth0.isAuthenticated) {
-      //  this.checkDatabase(JSON.parse(JSON.stringify(this.$root.$auth0.user.value)));
-      //}
       return this.$root.$auth0.isAuthenticated.value;
     },
   },
@@ -174,7 +160,6 @@ defineOptions({
       });
     },
     async checkDatabase(auser) {
-      console.log("WATCH USER", auser);
       if (!auser) {
         return;
       }
@@ -188,12 +173,10 @@ defineOptions({
       //const encryptedDexieStorage = wrappedKeyEncryptionCryptoJsStorage({
       //  storage: getRxStorageDexie(),
       //});
-      console.log("AUSER.sub", auser.sub);
       if (!auser.sub) {
         return;
       }
       let key = auser.sub.substring(6, 16);
-      console.log("KEY", auser.email + "-" + key + "-database");
       this.database = await createRxDatabase({
         name: auser.email + "-" + key + "-database",
         storage: encryptedDexieStorage,
@@ -212,9 +195,7 @@ defineOptions({
       window.close();
     },
     async getToken() {
-      console.log("getAccessTokenSilently");
       const accessToken = await this.$root.$auth0.getAccessTokenSilently();
-      console.log("GOT TOKEN", accessToken);
       return accessToken;
     },
     async openChat2() {
@@ -233,7 +214,6 @@ defineOptions({
           active: false,
         },
         function (tab) {
-          console.log("CREATING WINDOW");
           chrome.windows.create(
             {
               tabId: tab.id,
@@ -245,7 +225,6 @@ defineOptions({
               top: top,
             },
             function (win) {
-              console.log("SENDING MESSAGE to ", win.tabId);
               chrome.tabs.sendMessage(win.tabId, {
                 action: "set.url",
                 url: me.url,
@@ -282,7 +261,6 @@ defineOptions({
     async login(withPopup) {
       var me = this;
 
-      console.log("LOGIN SCREEN", this.screenWidth, this.screenHeight);
       //const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX
       //const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY
 
@@ -314,13 +292,11 @@ defineOptions({
 
       promise
         .then(async (token) => {
-          console.log("USER AUTH IS", user, this.$root.$auth0.isAuthenticated);
           me.loading = false;
         })
         .catch((err) => {
           me.loading = false;
           console.log(err);
-          console.log("Could not acquire token just yet");
         });
       return promise;
     },
