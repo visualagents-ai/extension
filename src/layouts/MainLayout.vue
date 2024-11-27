@@ -67,7 +67,6 @@
           <q-item-section
             side
             class="text-blue-grey-8"
-            @click="importflowdialog = true"
           >
             Send Notify
           </q-item-section>
@@ -128,6 +127,7 @@ defineOptions({
     chrome.runtime.sendMessage(
       { action: "get.page.text" },
       function (response) {
+        console.log('PAGETEXT', response.text)
         me.pagetext = response.text;
       }
     );
@@ -150,14 +150,16 @@ defineOptions({
   },
   methods: {
     sendNotify() {
+      console.log('Sending notify',chrome.runtime.getURL("../icons/u48.png"))
       chrome.notifications.create("", {
-        title: "Chatbot One",
+        title: "Agent Notification",
         message:
           "I found something interesting on this page. Do you want details?",
-        iconUrl: "https://i.ibb.co/dmRKtj4/quasar.png",
+        iconUrl: chrome.runtime.getURL("../icons/u16.png"),
         type: "basic",
         buttons: [{ title: "Yes" }, { title: "No" }],
       });
+      console.log('Sent notify')
     },
     async checkDatabase(auser) {
       if (!auser) {

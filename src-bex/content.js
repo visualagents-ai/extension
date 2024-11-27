@@ -27,6 +27,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   if (request.action === "set.page.text") {
     if(request.text && (request.text.indexOf('Hi. How can I help today?') === -1 && request.text !== '')) {
+      console.log('page.text', request.text)
       localStorage.setItem('page.text', request.text)
     }
   }

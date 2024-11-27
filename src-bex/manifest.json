@@ -1,13 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Visual Agents",
-  "short_name":"VisAge",
+  "short_name": "VisAge",
   "icons": {
     "16": "icons/u16.png",
     "48": "icons/u48.png",
     "128": "icons/u128.png"
   },
-
   "version": "0.1.0",
   "options_ui": {
     "page": "dist/www/index.html"
@@ -22,15 +21,19 @@
     "service_worker": "dist/background.js",
     "type": "module"
   },
-
   "content_scripts": [
     {
-      "matches": [ "*://*/*" ],
-      "css": [ "assets/content.css" ],
-      "js": [ "content.js" ]
+      "matches": [
+        "*://*/*"
+      ],
+      "css": [
+        "assets/content.css"
+      ],
+      "js": [
+        "content.js"
+      ]
     }
   ],
-
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"
   },
@@ -40,12 +43,18 @@
       "48": "icons/u48.png",
       "128": "icons/u128.png"
     },
-    "default_popup": "dist/www/index.html"
+    "default_popup": "dist/www/index.html",
+    "default_title": "Visual Agents"
   },
   "web_accessible_resources": [
     {
-      "resources": [ "*" ],
-      "matches": [ "*://*/*" ]
+      "resources": [
+        "*"
+      ],
+      "matches": [
+        "*://*/*"
+      ]
     }
-  ]
+  ],
+  "description": "Chrome Extension for the Visual Agents platform"
 }
