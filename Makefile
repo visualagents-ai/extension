@@ -6,11 +6,11 @@ install:
 
 .PHONY: build
 build:
-	quasar build -m bex &&  cp -r dist/bex/ src-bex/dist/
+	mkdir -p src-bex/dist && quasar build -m bex &&  cp -r dist/bex/* src-bex/dist/
 
 .PHONY: format
 format:
-	eslint --fix "src/**/*.{js,ts,vue}"
+	eslint --fix "src-bex/*.{js,ts,vue}"
 	prettier src/**/*.vue --parser=vue --write
 
 .PHONY: lint

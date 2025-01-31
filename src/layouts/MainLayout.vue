@@ -7,7 +7,7 @@
         </q-inner-loading>
         <q-item clickable v-close-popup @click="logout" v-if="isAuthenticated">
           <q-item-section side>
-            <q-icon style="font-size: 14px" name="las la-door-closed" />
+            <q-icon style="font-size: 14px" name="fas fa-door-closed" />
           </q-item-section>
           <q-item-section side class="text-blue-grey-8">
             Logout
@@ -20,26 +20,18 @@
           v-if="!isAuthenticated"
         >
           <q-item-section side>
-            <q-icon style="font-size: 14px" name="las la-door-open" />
+            <q-icon style="font-size: 14px" name="fas fa-door-open" />
           </q-item-section>
           <q-item-section side class="text-blue-grey-8"> Login </q-item-section>
         </q-item>
-        <q-item clickable v-close-popup @click="openApp">
-          <q-item-section side>
-            <q-icon style="font-size: 14px" name="las la-tree" />
-          </q-item-section>
-          <q-item-section side class="text-blue-grey-8">
-            Go to App
-          </q-item-section>
-        </q-item>
-        <q-separator />
 
+        <q-separator />
         <q-item clickable v-close-popup @click="openChat2">
           <q-item-section side>
-            <q-icon style="font-size: 14px" name="far fa-play-circle" />
+            <q-icon style="font-size: 14px" name="fas fa-sitemap" />
           </q-item-section>
           <q-item-section side class="text-blue-grey-8">
-            Open Chat
+            Editor
           </q-item-section>
         </q-item>
 
@@ -71,13 +63,22 @@
             Send Notify
           </q-item-section>
         </q-item>
-        <q-separator />
         <q-item clickable v-close-popup @click="clear = true">
           <q-item-section side>
             <q-icon style="font-size: 14px" name="fas fa-cog" />
           </q-item-section>
           <q-item-section side class="text-blue-grey-8">
             Configure
+          </q-item-section>
+        </q-item>
+
+        <q-separator />
+        <q-item clickable v-close-popup>
+          <q-item-section side>
+            <q-icon style="font-size: 14px" name="fas fa-info" />
+          </q-item-section>
+          <q-item-section side class="text-blue-grey-8">
+            About
           </q-item-section>
         </q-item>
       </q-list>
@@ -111,9 +112,10 @@ bexBackground((bridge) => {
 defineOptions({
   name: "MainLayout",
   async mounted() {
-    var me = this;
+    let me = this;
     this.login();
     me.loading = false;
+    console.log('GET.SCREEN.SIZE')
     chrome.runtime.sendMessage(
       { action: "get.screen.size" },
       function (response) {
@@ -124,6 +126,7 @@ defineOptions({
     chrome.runtime.sendMessage({ action: "get.url" }, function (response) {
       me.url = response.url;
     });
+
     chrome.runtime.sendMessage(
       { action: "get.page.text" },
       function (response) {
@@ -201,15 +204,12 @@ defineOptions({
       return accessToken;
     },
     async openChat2() {
-      var me = this;
+      let me = this;
 
-      const width = me.screenWidth;
-      const height = me.screenHeight;
-
-      //const systemZoom = width / window.screen.availWidth
-      const left = width - width * 0.3; // / systemZoom + dualScreenLeft
-      const top = height - height * 0.65; // / systemZoom + dualScreenTop
-
+      const width = screen.availWidth;
+      const height = screen.availHeight;
+      const left = 0;
+      const top = 0;
       chrome.tabs.create(
         {
           url: "http://localhost:8080/#/index?url=" + me.url,
@@ -221,23 +221,26 @@ defineOptions({
               tabId: tab.id,
               type: "popup",
               focused: true,
-              width: width * 0.3,
-              height: height * 0.65,
+              width: width,
+              height: height,
               left: left,
               top: top,
             },
             function (win) {
-              chrome.tabs.sendMessage(win.tabId, {
-                action: "set.url",
-                url: me.url,
-              });
+              setTimeout( () => {
+                chrome.tabs.sendMessage(win.tabId, {
+                  action: "set.url",
+                  url: me.url,
+                });
+              }, 5000)
+
             }
           );
         }
       );
     },
     async openChat() {
-      var me = this;
+      let me = this;
 
       const width = me.screenWidth;
       const height = me.screenHeight;
@@ -261,7 +264,7 @@ defineOptions({
       );
     },
     async login(withPopup) {
-      var me = this;
+      let me = this;
 
       //const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX
       //const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY

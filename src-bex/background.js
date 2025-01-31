@@ -6,7 +6,8 @@ let text;
 chrome.tabs.onActivated.addListener( function(activeInfo){
   chrome.tabs.get(activeInfo.tabId, function(tab){
     url = tab.url;
-    chrome.tabs.sendMessage(tab.id, {action: "get.page.text"});
+    chrome.tabs.sendMessage(tab.id, {action: "get.page.text", tab:activeInfo.tabId});
+    chrome.tabs.sendMessage(tab.id, {action: "get.page.html"});
 
     chrome.tabs.query({}, function(tabs){
       tabs.forEach(tab => {
@@ -32,7 +33,26 @@ chrome.tabs.getCurrent(function (tab) {
   }
 });
 
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.text == "what is my tab_id?") {
+    sendResponse({tab: sender.tab.id});
+  }
+  if (request.action === 'navigate.url') {
+    console.log('navigate.url', request);
+
+    chrome.tabs.query({}, function(tabs){
+      tabs.forEach(tab => {
+        try {
+          if(tab.id === request.tab) {
+            chrome.tabs.sendMessage(tab.id, {action: "set.location", tab:request.tab, url: request.url});
+          }
+        } catch (err) {
+          console.log('No listener')
+        }
+      })
+    });
+  }
   if (request.action === "screen.size") {
     width = request.width;
     height = request.height;
@@ -41,7 +61,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     chrome.tabs.query({}, function(tabs){
       tabs.forEach(tab => {
         try {
-          chrome.tabs.sendMessage(tab.id, {action: "set.page.text", text: text});
+          chrome.tabs.sendMessage(tab.id, {action: "set.page.text", tab:sender.tab.id, text: text});
         } catch (err) {
           console.log('No listener')
         }
@@ -54,13 +74,39 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       chrome.tabs.query({}, function(tabs){
         tabs.forEach(tab => {
           try {
-            chrome.tabs.sendMessage(tab.id, {action: "set.page.text", text: text});
+            chrome.tabs.sendMessage(tab.id, {action: "set.page.text", tab:sender.tab.id, text: text});
           } catch (err) {
             console.log('No listener')
           }
         })
       });
     }
+  }
+  if (request.action === "page.html") {
+    if(request.html && (request.html.indexOf('Hi. How can I help today?') === -1 && request.html !== '')) {
+      let html = request.html;
+      chrome.tabs.query({}, function(tabs){
+        tabs.forEach(tab => {
+          try {
+            chrome.tabs.sendMessage(tab.id, {action: "set.page.html", html: html});
+          } catch (err) {
+            console.log('No listener')
+          }
+        })
+      });
+    }
+  }
+  if (request.action === "query.elements") {
+    const query = 'div'; //request.text;
+    chrome.tabs.query({}, function(tabs){
+      tabs.forEach(tab => {
+        try {
+          chrome.tabs.sendMessage(tab.id, {action: "query.elements", text: query});
+        } catch (err) {
+          console.log('No listener')
+        }
+      })
+    });
   }
   if (request.action === "get.page.text")
   {
