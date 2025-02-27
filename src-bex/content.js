@@ -28,19 +28,59 @@ window.onload = () => {
 }
 
 window.addEventListener('message', function(e) {
+  console.log('Received message:', e.data);
 
+  let request = e.data;
+
+  // Messages comes into this window from a workflow block
+  // this window is probably a window the block opened to perform searches.
+  // This window receives the request, gathers the requested data and sends it back
+  // to the requesting tab, with the block id as the origin. The receiving content.js
+  // script inside VA will unpack the message and then emit the appropriate event to the
+  // requesting block
+  if(request.action === 'block.request') {
+    let origin = request.data.origin;
+    let action = request.data.action;
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const paramValue = urlParams.get('vaid');
+
+    // If vaid is set, then get the text and post it
+    if(action === 'get.text') {
+      console.log('content script: window is',window, window.id);
+      let text = document.body.innerText;
+      // get tab of request
+      console.log('content script: block.request', request)
+
+      // send message to source tab
+      window.postMessage({
+        action: "block.deliver.text",
+        text: text,
+        origin: origin,
+        blockwin: request.data.blockwin,
+        tab: request.tab
+      }, "*")
+
+      /*
+      chrome.runtime.sendMessage({
+        action: "block.deliver.text",
+        text: text,
+        origin: origin,
+        tab: request.tab
+      });*/
+    }
+  }
   if (e.source != window) {
     return;
   }
 
-  let request = e.data;
   if (request.action && (request.action == "send.background.url")) {
-    chrome.runtime.sendMessage({
-      action: "navigate.url",
-      url:request.url,
-      tab:request.tab
-    });
-  }
+      chrome.runtime.sendMessage({
+        action: "navigate.url",
+        url:request.url,
+        tab:request.tab
+      });
+    }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -57,7 +97,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
   if (request.action === "set.location") {
-    window.location.href = request.url;
+    if(window.location.href.indexOf('localhost') === -1) {
+      window.location.href = request.url;
+    }
     /*
     chrome.runtime.sendMessage({text: "what is my tab_id?"}, tabId => {
       console.log('My tabId is', tabId);
