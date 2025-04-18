@@ -58,6 +58,20 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     });
   }
 
+  if (request.action === 'emit.html') {
+    chrome.tabs.query({}, function(tabs){
+      tabs.forEach(tab => {
+        try {
+          console.log('emit.html tab:',tab.id,request.origin)
+          if(tab.id === request.origin) {
+            chrome.tabs.sendMessage(tab.id, {action: "emit.html", html:request.html, origin:request.origin, tab:request.tab});
+          }
+        } catch (err) {
+          console.log('No listener')
+        }
+      })
+    });
+  }
   if (request.action === 'get.html') {
     // Find tab that matches request.tab and send 'get.source' message to it
     // to be handled by that content script.

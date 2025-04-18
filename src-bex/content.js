@@ -5,6 +5,12 @@ chrome.runtime.sendMessage({
   height:window.screen.height
 });
 
+function decodeUnicodeHTML(escapedHTML) {
+  return escapedHTML.replace(/\\u([0-9a-fA-F]{4})/g, function(match, group) {
+    return String.fromCharCode(parseInt(group, 16));
+  });
+}
+
 chrome.runtime.sendMessage({text: "what is my tab_id?"}, tabId => {
   console.log('My tabId is', tabId);
 })
@@ -172,12 +178,57 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   // Got message from background script to get the source.
   if (request.action === "get.source") {
-    console.log('get.source',request, document.body.outerHTML)
+    setTimeout(() => {
 
-    // Post message to all content scripts?
-    // Might need to go back to the background script with the original tab
-    // origin and reply to it
-    window.postMessage({ action: "emit.html", html: document.body.outerHTML }, "*")
+      // Post message to all content scripts?
+      // Might need to go back to the background script with the original tab
+      // origin and reply to it
+      // request.origin should contain tabId of requesting tab (visualagents)
+      let htmlstr = decodeUnicodeHTML(document.body.outerHTML)
+
+      function stripScripts(s) {
+        let div = document.createElement('body');
+        div.innerHTML = s;
+        let scripts = div.getElementsByTagName('script');
+        let i = scripts.length;
+        while (i--) {
+          scripts[i].parentNode.removeChild(scripts[i]);
+        }
+        let styles = div.getElementsByTagName('style');
+        i = styles.length;
+        while (i--) {
+          styles[i].parentNode.removeChild(styles[i]);
+        }
+        let svgs = div.getElementsByTagName('svg');
+        i = svgs.length;
+        while (i--) {
+          svgs[i].parentNode.removeChild(svgs[i]);
+        }
+        return { html:div.innerHTML, el:div }
+      }
+
+      let o = stripScripts(htmlstr);
+      let html = o.html;
+      o.el.remove();
+
+      console.log('get.source',request, html)
+      if(html.trim().length > 10) {
+        chrome.runtime.sendMessage({
+          action: "emit.html",
+          html: html,
+          origin: request.origin.tab,
+          tab: request.tab
+        });
+      }
+
+      //window.postMessage({ action: "emit.html", html: html }, "*")
+    },1000)
+  }
+  if (request.action === "emit.html") {
+    let html = request.html.trim();
+    if(html.length > 10) {
+      window.postMessage({action: "emit.html", html: html}, "*")
+    }
   }
   if (request.action === "set.page.text") {
     if(request.text && request.text !== '') {
