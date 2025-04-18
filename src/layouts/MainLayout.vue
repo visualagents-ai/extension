@@ -232,7 +232,7 @@ defineOptions({
                   action: "set.url",
                   url: me.url,
                 });
-              }, 5000)
+              })
 
             }
           );
@@ -253,14 +253,14 @@ defineOptions({
         "http://localhost:8080/#/index?url=" + me.url,
         "chatwindow",
         "left=" +
-          left +
-          ",top=" +
-          top +
-          ",width=" +
-          width * 0.3 +
-          ",height=" +
-          height * 0.45 +
-          ",scrollbars=no,resizable=no"
+        left +
+        ",top=" +
+        top +
+        ",width=" +
+        width * 0.3 +
+        ",height=" +
+        height * 0.45 +
+        ",scrollbars=no,resizable=no"
       );
     },
     async login(withPopup) {
@@ -280,10 +280,10 @@ defineOptions({
           "",
           "auth0:authorize:popup",
           "left=" +
-            left +
-            ",top=" +
-            top +
-            ",width=500,height=715,scrollbars=no,resizable=no"
+          left +
+          ",top=" +
+          top +
+          ",width=500,height=715,scrollbars=no,resizable=no"
         );
         popup.onclose = function () {
           me.eventing.emit("login.dismissed");

@@ -14,8 +14,11 @@
   "permissions": [
     "storage",
     "tabs",
+    "scripting",
     "notifications",
-    "activeTab"
+    "activeTab",
+    "http://*/",
+    "https://*/"
   ],
   "background": {
     "service_worker": "dist/background.js",
@@ -31,7 +34,8 @@
       ],
       "js": [
         "content.js"
-      ]
+      ],
+      "all_frames": true
     }
   ],
   "content_security_policy": {

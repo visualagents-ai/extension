@@ -12,9 +12,10 @@ chrome.tabs.onActivated.addListener( function(activeInfo){
     chrome.tabs.query({}, function(tabs){
       tabs.forEach(tab => {
         try {
+
           chrome.tabs.sendMessage(tab.id, {action: "set.url", url: url});
         } catch (err) {
-          console.log('No listener')
+          console.error(err);
         }
       })
     });
@@ -35,6 +36,9 @@ chrome.tabs.getCurrent(function (tab) {
 
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.action === "send.notification") {
+    chrome.notifications.create(request.options);
+  }
   if (request.text == "what is my tab_id?") {
     sendResponse({tab: sender.tab.id});
   }
@@ -53,6 +57,22 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       })
     });
   }
+
+  if (request.action === 'get.html') {
+    // Find tab that matches request.tab and send 'get.source' message to it
+    // to be handled by that content script.
+    chrome.tabs.query({}, function(tabs){
+      tabs.forEach(tab => {
+        try {
+          if(tab.id === request.tab) {
+            chrome.tabs.sendMessage(tab.id, {action: "get.source", origin:request.origin, tab:request.tab});
+          }
+        } catch (err) {
+          console.log('No listener')
+        }
+      })
+    });
+  }
   if (request.action === "screen.size") {
     width = request.width;
     height = request.height;
@@ -61,7 +81,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     chrome.tabs.query({}, function(tabs){
       tabs.forEach(tab => {
         try {
-          chrome.tabs.sendMessage(tab.id, {action: "set.page.text", tab:sender.tab.id, text: text});
+          chrome.tabs.sendMessage(tab.id, {action: "set.page.text", tab:sender.tab.id, text: request.text});
         } catch (err) {
           console.log('No listener')
         }
