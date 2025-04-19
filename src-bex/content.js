@@ -1,12 +1,11 @@
-
 chrome.runtime.sendMessage({
   action: "screen.size",
-  width:window.screen.width,
-  height:window.screen.height
+  width: window.screen.width,
+  height: window.screen.height
 });
 
 function decodeUnicodeHTML(escapedHTML) {
-  return escapedHTML.replace(/\\u([0-9a-fA-F]{4})/g, function(match, group) {
+  return escapedHTML.replace(/\\u([0-9a-fA-F]{4})/g, function (match, group) {
     return String.fromCharCode(parseInt(group, 16));
   });
 }
@@ -17,25 +16,25 @@ chrome.runtime.sendMessage({text: "what is my tab_id?"}, tabId => {
 
 window.onload = () => {
   console.log('CONTENT SCRIPT LOADED');
-      const iframe = document.createElement('iframe');
-      iframe.setAttribute('id', 'cm-frame');
-      iframe.setAttribute(
-        'style',
-        'top: 10px;right: 10px;width: 400px;height: calc(100% - 20px);z-index: 2147483650;border: none; position:fixed;'
-      );
-      iframe.setAttribute('allow', '');
-      iframe.src = chrome.runtime.getURL('spa/index.html');
+  const iframe = document.createElement('iframe');
+  iframe.setAttribute('id', 'cm-frame');
+  iframe.setAttribute(
+    'style',
+    'top: 10px;right: 10px;width: 400px;height: calc(100% - 20px);z-index: 2147483650;border: none; position:fixed;'
+  );
+  iframe.setAttribute('allow', '');
+  iframe.src = chrome.runtime.getURL('spa/index.html');
 
-      //document.body.appendChild(iframe);
+  //document.body.appendChild(iframe);
 
   let text = getTextWithoutScripts();
   let html = document.body.outerHTML;
-  if(html.indexOf('Now Loading.....') === -1) {
+  if (html.indexOf('Now Loading.....') === -1) {
     localStorage.setItem('page.html', html)
   }
   let _html = localStorage.getItem('page.html')
-  console.log('_HTML',_html)
-  if(text && (text.indexOf('Hi. How can I help today?') === -1 && text !== '')) {
+  console.log('_HTML', _html)
+  if (text && (text.indexOf('Hi. How can I help today?') === -1 && text !== '')) {
     chrome.runtime.sendMessage({
       action: "page.text",
       text: text
@@ -47,12 +46,12 @@ window.onload = () => {
   }
 }
 
-window.addEventListener('message', function(e) {
+window.addEventListener('message', function (e) {
   console.log('Received message:', e.data);
 
   let request = e.data;
-  if(request.action === 'send.notification') {
-    if(request.url === window.location.href) {
+  if (request.action === 'send.notification') {
+    if (request.url === window.location.href) {
       chrome.runtime.sendMessage(request);
     }
   }
@@ -62,7 +61,7 @@ window.addEventListener('message', function(e) {
   // to the requesting tab, with the block id as the origin. The receiving content.js
   // script inside VA will unpack the message and then emit the appropriate event to the
   // requesting block
-  if(request.action === 'block.request') {
+  if (request.action === 'block.request') {
     let origin = request.data.origin;
     let action = request.data.action;
     const queryString = window.location.search;
@@ -71,8 +70,9 @@ window.addEventListener('message', function(e) {
 
     console.log('CONTENT SCRIPT: block.request', request)
     // If vaid is set, then get the text and post it
-    if(action === 'get.text') {
-      let text = origin+':'+request.tab+':'+getTextWithoutScripts();;
+    if (action === 'get.text') {
+      let text = origin + ':' + request.tab + ':' + getTextWithoutScripts();
+      ;
       // get tab of request
       console.log('content script: block.request', request)
 
@@ -99,11 +99,11 @@ window.addEventListener('message', function(e) {
   }
 
   if (request.action && (request.action == "send.background.url")) {
-      chrome.runtime.sendMessage({
-        action: "navigate.url",
-        url:request.url,
-        tab:request.tab
-      });
+    chrome.runtime.sendMessage({
+      action: "navigate.url",
+      url: request.url,
+      tab: request.tab
+    });
   }
   if (request.action && (request.action == "get.page.html")) {
     chrome.runtime.sendMessage({text: "what is my tab_id?"}, tabId => {
@@ -128,14 +128,15 @@ window.addEventListener('message', function(e) {
   }
 });
 
-const config = { attributes: true, childList: true, subtree: true };
+const config = {attributes: true, childList: true, subtree: true};
 
 // Callback function to execute when mutations are observed
 const callback = (mutationList, observer) => {
-  let text = getTextWithoutScripts();;
-  console.log('OBSERVER:',text);
-  if(text.indexOf('use strict') === -1) {
-    window.postMessage({ action: "emit.page", text: text}, "*")
+  let text = getTextWithoutScripts();
+  ;
+  console.log('OBSERVER:', text);
+  if (text.indexOf('use strict') === -1) {
+    window.postMessage({action: "emit.page", text: text}, "*")
   }
 };
 
@@ -167,12 +168,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('send.background.url')
     chrome.runtime.sendMessage({
       action: "navigate.url",
-      url:request.url,
-      tab:request.tab
+      url: request.url,
+      tab: request.tab
     });
   }
   if (request.action === "set.location") {
-    if(window.location.href.indexOf('localhost') === -1) {
+    if (window.location.href.indexOf('localhost') === -1) {
       window.location.href = request.url;
     }
   }
@@ -204,15 +205,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         while (i--) {
           svgs[i].parentNode.removeChild(svgs[i]);
         }
-        return { html:div.innerHTML, el:div }
+        return {html: div.innerHTML, el: div}
       }
 
       let o = stripScripts(htmlstr);
       let html = o.html;
       o.el.remove();
 
-      console.log('get.source',request, html)
-      if(html.trim().length > 10) {
+      console.log('get.source', request, html)
+      if (html.trim().length > 10) {
         chrome.runtime.sendMessage({
           action: "emit.html",
           html: html,
@@ -222,38 +223,38 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
 
       //window.postMessage({ action: "emit.html", html: html }, "*")
-    },1000)
+    }, 1000)
   }
   if (request.action === "emit.html") {
     let html = request.html.trim();
-    if(html.length > 10) {
+    if (html.length > 10) {
       window.postMessage({action: "emit.html", html: html}, "*")
     }
   }
   if (request.action === "set.page.text") {
-    if(request.text && request.text !== '') {
+    if (request.text && request.text !== '') {
       console.log('page.text', request.text)
 
       localStorage.setItem('page.text', request.text)
-      console.log('window.href',window.location.href)
-      console.log('Navigating to new page',request);
-      if(request.text.indexOf('use strict') === -1) {
-        window.postMessage({ action: "emit.page", text: request.tab+":"+request.text}, "*")
+      console.log('window.href', window.location.href)
+      console.log('Navigating to new page', request);
+      if (request.text.indexOf('use strict') === -1) {
+        window.postMessage({action: "emit.page", text: request.tab + ":" + request.text}, "*")
       }
     }
   }
   if (request.action === "set.page.html") {
-    if(request.html && (request.html.indexOf('Hi. How can I help today?') === -1 && request.html !== '')) {
+    if (request.html && (request.html.indexOf('Hi. How can I help today?') === -1 && request.html !== '')) {
       console.log('page.html', request.html)
       localStorage.setItem('page.html', request.html)
     }
   }
   if (request.action === "query.elements") {
-    console.log('QUERYING ELEMENTS',request.text)
+    console.log('QUERYING ELEMENTS', request.text)
     let elements = document.querySelector(request.text)
     const els = elements.map(element => element.textContent)
     const elstext = els.join('\n')
-    console.log('QUERYING ELEMENTS',elements)
+    console.log('QUERYING ELEMENTS', elements)
     chrome.runtime.sendMessage({
       action: "query.elements.result",
       text: elstext

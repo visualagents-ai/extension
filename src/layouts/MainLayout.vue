@@ -56,10 +56,7 @@
           <q-item-section side>
             <q-icon style="font-size: 14px" name="fas fa-upload" />
           </q-item-section>
-          <q-item-section
-            side
-            class="text-blue-grey-8"
-          >
+          <q-item-section side class="text-blue-grey-8">
             Send Notify
           </q-item-section>
         </q-item>
@@ -77,9 +74,7 @@
           <q-item-section side>
             <q-icon style="font-size: 14px" name="fas fa-info" />
           </q-item-section>
-          <q-item-section side class="text-blue-grey-8">
-            About
-          </q-item-section>
+          <q-item-section side class="text-blue-grey-8"> About </q-item-section>
         </q-item>
       </q-list>
     </q-page-container>
@@ -115,7 +110,7 @@ defineOptions({
     let me = this;
     this.login();
     me.loading = false;
-    console.log('GET.SCREEN.SIZE')
+    console.log("GET.SCREEN.SIZE");
     chrome.runtime.sendMessage(
       { action: "get.screen.size" },
       function (response) {
@@ -130,7 +125,7 @@ defineOptions({
     chrome.runtime.sendMessage(
       { action: "get.page.text" },
       function (response) {
-        console.log('PAGETEXT', response.text)
+        console.log("PAGETEXT", response.text);
         me.pagetext = response.text;
       }
     );
@@ -153,7 +148,7 @@ defineOptions({
   },
   methods: {
     sendNotify() {
-      console.log('Sending notify',chrome.runtime.getURL("../icons/u48.png"))
+      console.log("Sending notify", chrome.runtime.getURL("../icons/u48.png"));
       chrome.notifications.create("", {
         title: "Agent Notification",
         message:
@@ -162,7 +157,7 @@ defineOptions({
         type: "basic",
         buttons: [{ title: "Yes" }, { title: "No" }],
       });
-      console.log('Sent notify')
+      console.log("Sent notify");
     },
     async checkDatabase(auser) {
       if (!auser) {
@@ -227,13 +222,12 @@ defineOptions({
               top: top,
             },
             function (win) {
-              setTimeout( () => {
+              setTimeout(() => {
                 chrome.tabs.sendMessage(win.tabId, {
                   action: "set.url",
                   url: me.url,
                 });
-              })
-
+              });
             }
           );
         }
@@ -253,14 +247,14 @@ defineOptions({
         "http://localhost:8080/#/index?url=" + me.url,
         "chatwindow",
         "left=" +
-        left +
-        ",top=" +
-        top +
-        ",width=" +
-        width * 0.3 +
-        ",height=" +
-        height * 0.45 +
-        ",scrollbars=no,resizable=no"
+          left +
+          ",top=" +
+          top +
+          ",width=" +
+          width * 0.3 +
+          ",height=" +
+          height * 0.45 +
+          ",scrollbars=no,resizable=no"
       );
     },
     async login(withPopup) {
@@ -280,10 +274,10 @@ defineOptions({
           "",
           "auth0:authorize:popup",
           "left=" +
-          left +
-          ",top=" +
-          top +
-          ",width=500,height=715,scrollbars=no,resizable=no"
+            left +
+            ",top=" +
+            top +
+            ",width=500,height=715,scrollbars=no,resizable=no"
         );
         popup.onclose = function () {
           me.eventing.emit("login.dismissed");
