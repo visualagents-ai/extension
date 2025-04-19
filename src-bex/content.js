@@ -12,6 +12,10 @@ function decodeUnicodeHTML(escapedHTML) {
 
 chrome.runtime.sendMessage({text: "what is my tab_id?"}, tabId => {
   console.log('My tabId is', tabId);
+  chrome.runtime.sendMessage({
+    action: "inject",
+    tab: tabId.tab
+  });
 })
 
 window.onload = () => {

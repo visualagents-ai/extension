@@ -58,6 +58,21 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     });
   }
 
+  if(request.action === 'inject') {
+    let code = 'console.log("INJECTED!");'
+    chrome.scripting.executeScript({
+      target: {tabId: request.tab},
+      func: code => {
+        const el = document.createElement('script');
+        el.textContent = code;
+        document.documentElement.appendChild(el);
+        el.remove();
+      },
+      args: [code],
+      world: 'MAIN',
+      injectImmediately: true, // Chrome 102+
+    });
+  }
   if (request.action === 'emit.html') {
     chrome.tabs.query({}, function(tabs){
       tabs.forEach(tab => {
