@@ -79,7 +79,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         try {
           console.log('emit.html tab:',tab.id,request.origin)
           if(tab.id === request.origin) {
-            chrome.tabs.sendMessage(tab.id, {action: "emit.html", html:request.html, origin:request.origin, tab:request.tab});
+            chrome.tabs.sendMessage(tab.id, {action: "emit.html", href:request.href, html:request.html, origin:request.origin, tab:request.tab});
           }
         } catch (err) {
           console.log('No listener')

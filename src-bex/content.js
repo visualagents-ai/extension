@@ -183,6 +183,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   // Got message from background script to get the source.
   if (request.action === "get.source") {
+    console.log("get.source ",request, window.location);
     setTimeout(() => {
 
       // Post message to all content scripts?
@@ -212,15 +213,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return {html: div.innerHTML, el: div}
       }
 
-      let o = stripScripts(htmlstr);
-      let html = o.html;
-      o.el.remove();
+      //let o = stripScripts(htmlstr);
+      let html = htmlstr; //o.html;
+      //o.el.remove();
 
-      console.log('get.source', request, html)
       if (html.trim().length > 10) {
         chrome.runtime.sendMessage({
           action: "emit.html",
           html: html,
+          href: window.location.href,
           origin: request.origin.tab,
           tab: request.tab
         });
@@ -230,9 +231,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }, 1000)
   }
   if (request.action === "emit.html") {
+    console.log('emit.html:',request)
     let html = request.html.trim();
     if (html.length > 10) {
-      window.postMessage({action: "emit.html", html: html}, "*")
+      window.postMessage({action: "emit.html",
+        href: request.href, html: html}, "*")
     }
   }
   if (request.action === "set.page.text") {
