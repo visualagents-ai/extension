@@ -4,6 +4,23 @@ chrome.runtime.sendMessage({
   height: window.screen.height
 });
 
+function removeScriptTags(htmlString) {
+  // Regular expression to match <script> tags and their content (including newlines)
+  // The 'g' flag ensures all occurrences are replaced, and 'i' makes it case-insensitive.
+  // The 's' flag (dotAll) allows '.' to match newline characters.
+  const regex = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gis;
+
+  // Replace all matched script tags with an empty string
+  return htmlString.replace(regex, '');
+}
+
+function extractBody(html_string) {
+  let parser = new DOMParser();
+  let dom_document = parser.parseFromString(html_string, "text/html");
+  let body_element = dom_document.getElementsByTagName("body")[0];
+  console.log(removeScriptTags(body_element.innerHTML));
+}
+
 function decodeUnicodeHTML(escapedHTML) {
   return escapedHTML.replace(/\\u([0-9a-fA-F]{4})/g, function (match, group) {
     return String.fromCharCode(parseInt(group, 16));
@@ -12,6 +29,17 @@ function decodeUnicodeHTML(escapedHTML) {
 
 chrome.runtime.sendMessage({text: "what is my tab_id?"}, tabId => {
   console.log('My tabId is', tabId);
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabkey = urlParams.get('tabkey'); // Replace 'paramName' with the actual parameter key
+
+  console.log("STORING TABID["+tabId.tab+":", tabkey);
+  localStorage.setItem(tabkey, tabId.tab)
+  window.postMessage({
+    action: "tab.id",
+    key: tabkey,
+    tab: tabId.tab
+  }, "*")
+
   chrome.runtime.sendMessage({
     action: "inject",
     tab: tabId.tab
@@ -54,6 +82,42 @@ window.addEventListener('message', function (e) {
   console.log('Received message:', e.data);
 
   let request = e.data;
+  if (request.action === 'command') {
+    chrome.runtime.sendMessage({
+      action: "send.command",
+      message: request.message,
+      tab: request.message.tab
+    }).then(response => {
+      console.log("Message sent successfully:", response);
+    })
+      .catch(error => {
+        console.error("Error sending message:", error);
+      });
+  }
+  if (request.action === 'console.info') {
+    chrome.runtime.sendMessage({
+      action: "send.console.info",
+      info: request.info,
+      tab: request.tab
+    }).then(response => {
+      console.log("Message sent successfully:", response);
+    })
+      .catch(error => {
+        console.error("Error sending message:", error);
+      });
+  }
+  if (request.action === 'selenium') {
+    console.log('SELENIUM: ', request.message);
+    chrome.runtime.sendMessage('injldmpklnapoapkkjjhongmhknknpdo',
+      request.message
+    ).then(response => {
+      console.log("Message sent successfully:", response);
+    })
+      .catch(error => {
+        console.error("Error sending message:", error);
+      });
+  }
+
   if (request.action === 'send.notification') {
     if (request.url === window.location.href) {
       chrome.runtime.sendMessage(request);
@@ -168,6 +232,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     window.extpageurl = request.url
     localStorage.setItem('page.url', request.url)
   }
+  if (request.action === "console.info") {
+    chrome.runtime.sendMessage({
+      action: "send.console.info",
+      info: request.info,
+      tab: request.tab
+    });
+  }
   if (request.action === "send.background.url") {
     console.log('send.background.url')
     chrome.runtime.sendMessage({
@@ -230,6 +301,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       //window.postMessage({ action: "emit.html", html: html }, "*")
     }, 1000)
   }
+  if (request.action === "execute.command") {
+    console.log('execute.command',request)
+    if(request.message.action === "send.keys") {
+      setTimeout( () => {
+        document.querySelector(request.message.target).value = request.message.text;
+      },1000)
+    }
+    if(request.message.action === "get.html") {
+      setTimeout( () => {
+        let html = document.documentElement.innerHTML
+        console.log('COMMAND HTML: ',html);
+      },1000)
+    }
+  }
+  if (request.action === "receive.message") {
+    console.log('receive.message',request)
+  }
+  if (request.action === "emit.console.info") {
+    console.log('console.info',request.info)
+  }
   if (request.action === "emit.html") {
     console.log('emit.html:',request)
     let html = request.html.trim();
@@ -276,11 +367,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
   if (request.action === "get.page.html") {
-    console.log('get.page.html')
     let html = document.documentElement.innerHTML
-    chrome.runtime.sendMessage({
-      action: "page.html",
-      html: html
-    });
+    let body = extractBody(html);
+    setTimeout(() => {
+      chrome.runtime.sendMessage({
+        action: "page.html",
+        html: body
+      });
+    }, 1500)
   }
 });

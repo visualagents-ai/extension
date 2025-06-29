@@ -57,7 +57,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       })
     });
   }
-
+  if (request.action === 'send.command') {
+    chrome.tabs.sendMessage(request.tab, {action: "execute.command", tab:request.tab, message:request.message});
+  }
+  if (request.action === 'send.console.info') {
+    chrome.tabs.sendMessage(request.tab, {action: "emit.console.info", info:request.info});
+  }
   if(request.action === 'inject') {
     let code = 'console.log("INJECTED!");'
     chrome.scripting.executeScript({
