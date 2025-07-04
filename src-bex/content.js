@@ -34,14 +34,9 @@ chrome.runtime.sendMessage({text: "what is my tab_id?"}, tabId => {
 
   console.log("STORING TABID["+tabId.tab+":", tabkey);
   localStorage.setItem(tabkey, tabId.tab)
-  window.postMessage({
-    action: "tab.id",
-    key: tabkey,
-    tab: tabId.tab
-  }, "*")
-
   chrome.runtime.sendMessage({
-    action: "inject",
+    action: "background.tab.id",
+    key: tabkey,
     tab: tabId.tab
   });
 })
@@ -228,6 +223,14 @@ function getTextWithoutScripts() {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "notify.tab.id") {
+    console.log("CONTENT notify.tab.id", request);
+    window.postMessage({
+      action: "notify.tab.id",
+      key: request.key,
+      tab: request.tab
+    }, "*")
+  }
   if (request.action === "set.url") {
     window.extpageurl = request.url
     localStorage.setItem('page.url', request.url)

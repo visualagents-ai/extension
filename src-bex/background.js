@@ -39,8 +39,27 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === "send.notification") {
     chrome.notifications.create(request.options);
   }
-  if (request.text == "what is my tab_id?") {
+  if (request.text === "what is my tab_id?") {
     sendResponse({tab: sender.tab.id});
+  }
+  if (request.action === "background.tab.id") {
+    console.log("background.tab.id", request);
+    chrome.tabs.query({}, function(tabs){
+      tabs.forEach(tab => {
+        try {
+          if(tab.id === request.tab) {
+            console.log("notify.tab.id",request);
+            chrome.tabs.sendMessage(tab.id, {
+              action: "notify.tab.id",
+              key: request.key,
+              tab: request.tab
+            });
+          }
+        } catch (err) {
+          console.log('No listener')
+        }
+      })
+    });
   }
   if (request.action === 'navigate.url') {
     console.log('navigate.url', request);
