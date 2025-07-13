@@ -47,14 +47,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     chrome.tabs.query({}, function(tabs){
       tabs.forEach(tab => {
         try {
-          if(tab.id === request.tab) {
             console.log("notify.tab.id",request);
             chrome.tabs.sendMessage(tab.id, {
               action: "notify.tab.id",
               key: request.key,
               tab: request.tab
             });
-          }
         } catch (err) {
           console.log('No listener')
         }
