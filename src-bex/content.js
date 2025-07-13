@@ -308,8 +308,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('execute.command',request)
     if(request.message.action === "send.keys") {
       setTimeout( () => {
-        document.querySelector(request.message.target).value = request.message.text;
-      },1000)
+        let input = document.querySelector(request.message.target);
+        input.value = request.message.text;
+        const enterEvent = new KeyboardEvent('keydown', {
+          key: 'Enter',
+          code: 'Enter',
+          keyCode: 13, // Deprecated, but still widely used for compatibility
+          which: 13,   // Deprecated, but still widely used for compatibility
+          bubbles: true, // Allow the event to bubble up the DOM tree
+          cancelable: true // Allow the event's default action to be prevented
+        });
+
+// Dispatch the event on the input element
+        input.dispatchEvent(enterEvent);
+      },500)
     }
     if(request.message.action === "get.html") {
       setTimeout( () => {
