@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Visual Agents",
-  "short_name": "VisAge",
+  "short_name": "Visual Agents",
   "icons": {
     "16": "icons/u16.png",
     "48": "icons/u48.png",
@@ -20,6 +20,7 @@
     "scripting",
     "notifications",
     "activeTab",
+    "sidePanel",
     "declarativeContent"
   ],
   "background": {
@@ -62,5 +63,8 @@
       ]
     }
   ],
+  "side_panel": {
+    "default_path": "./www/index.html"
+  },
   "description": "Chrome Extension for the Visual Agents platform"
 }

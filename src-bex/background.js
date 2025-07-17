@@ -3,6 +3,9 @@ let height = 0;
 let url;
 let text;
 
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
+  .catch((error) => console.error(error));
+
 chrome.tabs.onActivated.addListener( function(activeInfo){
   chrome.tabs.get(activeInfo.tabId, function(tab){
     url = tab.url;
@@ -40,7 +43,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     chrome.notifications.create(request.options);
   }
   if (request.text === "what is my tab_id?") {
-    sendResponse({tab: sender.tab.id});
+    if(sender && sender.tab && sender.tab.id) {
+      sendResponse({tab: sender.tab.id});
+    }
   }
   if (request.action === "background.tab.id") {
     console.log("background.tab.id", request);

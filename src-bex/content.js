@@ -321,7 +321,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Dispatch the event on the input element
         input.dispatchEvent(enterEvent);
-      },500)
+      },1000)
     }
     if(request.message.action === "get.html") {
       setTimeout( () => {
