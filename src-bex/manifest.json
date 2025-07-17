@@ -64,7 +64,7 @@
     }
   ],
   "side_panel": {
-    "default_path": "./www/index.html"
+    "default_path": "./dist/www/index.html"
   },
   "description": "Chrome Extension for the Visual Agents platform"
 }

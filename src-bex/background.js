@@ -79,6 +79,18 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       })
     });
   }
+  if (request.action === 'send.to.agent') {
+    chrome.tabs.query({}, function(tabs){
+      tabs.forEach(tab => {
+        try {
+          // Sends to all tabs, but only side panel will recognize it
+            chrome.tabs.sendMessage(tab.id, request);
+        } catch (err) {
+          console.log('No listener')
+        }
+      })
+    });
+  }
   if (request.action === 'send.command') {
     chrome.tabs.sendMessage(request.tab, {action: "execute.command", tab:request.tab, message:request.message});
   }

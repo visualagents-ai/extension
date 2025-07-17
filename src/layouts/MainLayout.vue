@@ -1,6 +1,19 @@
 <template>
   <q-layout view="lHh Lpr lFf" class="bg-white">
-    <q-page-container>
+    <q-inner-loading :showing="loading" style="z-index: 9999">
+      <q-spinner-gears size="50px" color="primary" />
+    </q-inner-loading>
+    <q-page-container style="border-bottom: 1px solid black">
+      <q-toolbar class="bg-accent" width="100%">
+        <q-space/>
+        <q-btn dense flat size="lg" color="secondary" icon="fas fa-door-closed" v-if="isAuthenticated" @click="logout">
+          <q-tooltip>Logout</q-tooltip>
+        </q-btn>
+        <q-btn dense flat size="lg" color="secondary" icon="fas fa-door-open" v-if="!isAuthenticated" @click="login(true)">
+          <q-tooltip>Login</q-tooltip>
+        </q-btn>
+      </q-toolbar>
+      <!--
       <q-list dense>
         <q-inner-loading :showing="loading" style="z-index: 999999">
           <q-spinner-gears size="30px" color="primary" />
@@ -77,25 +90,70 @@
           <q-item-section side class="text-blue-grey-8"> About </q-item-section>
         </q-item>
       </q-list>
+      -->
     </q-page-container>
+
+    <q-dialog v-model="alert" >
+      <q-card style="padding: 10px; padding-top: 30px">
+        <q-card-section
+          class="bg-secondary"
+          style="
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 40px;
+          "
+        >
+          <div
+            style="
+              font-weight: bold;
+              font-size: 18px;
+              margin-top: -20px;
+              margin-left: -15px;
+              color: #fff;
+            "
+          >
+            <q-toolbar>
+              <q-item-label>Data Received</q-item-label>
+            </q-toolbar>
+          </div>
+        </q-card-section>
+        <q-card-section class="row items-center" style="height: 120px">
+          <span class="q-ml-sm">
+            Hi. I have received some data. Do you want me to save it?
+          </span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            style="position: absolute; bottom: 0px; right: 100px; width: 100px"
+            flat
+            label="No"
+            class="bg-accent text-dark"
+            color="primary"
+            v-close-popup
+          />
+          <q-btn
+            flat
+            style="position: absolute; bottom: 0px; right: 0px; width: 100px"
+            label="Yes"
+            class="bg-secondary text-white"
+            color="primary"
+            v-close-popup
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import { bexBackground } from "quasar/wrappers";
-import { createRxDatabase, addRxPlugin } from "rxdb";
-import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
-import { wrappedKeyEncryptionCryptoJsStorage } from "rxdb/plugins/encryption-crypto-js";
-import { RxDBMigrationPlugin } from "rxdb/plugins/migration-schema";
-import { RxDBUpdatePlugin } from "rxdb/plugins/update";
-import { RxDBAttachmentsPlugin } from "rxdb/plugins/attachments";
-import { RxDBJsonDumpPlugin } from "rxdb/plugins/json-dump";
+import dexieCloud from 'dexie-cloud-addon';
+import Dexie from 'dexie';
 
-addRxPlugin(RxDBJsonDumpPlugin);
-addRxPlugin(RxDBUpdatePlugin);
-addRxPlugin(RxDBMigrationPlugin);
-addRxPlugin(RxDBAttachmentsPlugin);
+import { bexBackground } from "quasar/wrappers";
 
 bexBackground((bridge) => {
   // Hook into the bridge to listen for events sent from the client BEX.
@@ -109,6 +167,17 @@ defineOptions({
   async mounted() {
     let me = this;
     this.login();
+
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.action === 'send.to.agent') {
+        me.alert = true;
+        // Process the message and update the side panel UI
+        console.log('Received message from background:', request.data);
+        // Example: update a DOM element
+        sendResponse({ status: 'Message received by side panel' }); // Send a response back to the background script
+      }
+    });
+
     me.loading = false;
     console.log("GET.SCREEN.SIZE");
     chrome.runtime.sendMessage(
@@ -138,6 +207,8 @@ defineOptions({
   },
   data() {
     return {
+      loading: false,
+      alert: false,
       pagetext: "NO TEXT",
       chats: [],
       loading: true,
@@ -191,8 +262,13 @@ defineOptions({
       window.open("https://app.visualagents.ai", "_blank");
     },
     logout() {
-      this.$root.$auth0.logout({ returnTo: window.location.origin });
-      window.close();
+      let me = this;
+      this.loading = true;
+      this.$root.$auth0.logout({ returnTo: window.location.origin }).then(() => {
+        me.loading = false;
+        location.reload();
+      })
+
     },
     async getToken() {
       const accessToken = await this.$root.$auth0.getAccessTokenSilently();
@@ -257,16 +333,51 @@ defineOptions({
           ",scrollbars=no,resizable=no"
       );
     },
+
+    async createDatabase(user) {
+      const db = new Dexie(user.email, { addons: [dexieCloud] });
+
+      db.version(5).stores({
+        files:
+          '@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created',
+        environment: '@id, name, scope, link, type, detail, value',
+        library:
+          '@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created',
+        settings: '@id, name, value',
+        aglets:
+          '@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created',
+        shares:
+          '@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created',
+        chats:
+          '@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created',
+      });
+
+      const libraryObservable = Dexie.liveQuery(() => db.library.toArray());
+
+      const subscription = libraryObservable.subscribe({
+        next: () => {
+          console.log('FILE CHANGED!');
+        },
+        error: (error) => console.error(error),
+      });
+
+      function onKeyChange(db) {
+        console.log('onKeyChange', db);
+      }
+
+      await db.open();
+      console.log('RETURNING DB', db);
+      console.log('LIBRARY:', db.library.toArray().then((data) => {
+        console.log('DATA:', data);
+      }));
+      return db;
+    },
     async login(withPopup) {
       let me = this;
-
-      //const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX
-      //const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY
 
       const width = me.screenWidth;
       const height = me.screenHeight;
 
-      //const systemZoom = width / window.screen.availWidth
       const left = (width - 500) / 2; // / systemZoom + dualScreenLeft
       const top = (height - 715) / 2; // / systemZoom + dualScreenTop
       if (withPopup) {
@@ -291,11 +402,12 @@ defineOptions({
 
       promise
         .then(async (token) => {
-          me.loading = false;
+          console.log("GOT TOKEN:",token);
+          await this.createDatabase(user);
         })
         .catch((err) => {
-          me.loading = false;
-          console.log(err);
+          console.warn("GOT TOKEN ERROR");
+          console.error(err);
         });
       return promise;
     },

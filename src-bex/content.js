@@ -77,6 +77,17 @@ window.addEventListener('message', function (e) {
   console.log('Received message:', e.data);
 
   let request = e.data;
+  if (request.action === 'sendToAgent') {
+    let data = request.data;
+    chrome.runtime.sendMessage({
+      action: "send.to.agent",
+      data: data
+    }).then(response => {
+      console.log("Message sent successfully:", response);
+    }).catch(error => {
+        console.error("Error sending message:", error);
+      });
+  }
   if (request.action === 'command') {
     chrome.runtime.sendMessage({
       action: "send.command",

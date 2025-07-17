@@ -19,9 +19,10 @@
     "@auth0/auth0-vue": "^2.3.3",
     "@quasar/extras": "^1.16.4",
     "browserfy": "^1.0.0",
+    "dexie": "^4.0.11",
+    "dexie-cloud-addon": "^4.0.12",
     "events": "^3.3.0",
     "quasar": "^2.16.0",
-    "rxdb": "^15.24.0",
     "vue": "^3.4.18",
     "vue-router": "^4.0.12"
   },
