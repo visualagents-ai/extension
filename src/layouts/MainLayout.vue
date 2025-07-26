@@ -5,11 +5,27 @@
     </q-inner-loading>
     <q-page-container style="border-bottom: 1px solid black">
       <q-toolbar class="bg-accent" width="100%">
-        <q-space/>
-        <q-btn dense flat size="lg" color="secondary" icon="fas fa-door-closed" v-if="isAuthenticated && loggedIn" @click="logout">
+        <q-space />
+        <q-btn
+          dense
+          flat
+          size="lg"
+          color="secondary"
+          icon="fas fa-door-closed"
+          v-if="isAuthenticated && loggedIn"
+          @click="logout"
+        >
           <q-tooltip>Logout</q-tooltip>
         </q-btn>
-        <q-btn dense flat size="lg" color="secondary" icon="fas fa-door-open" v-if="!(isAuthenticated && loggedIn)" @click="login(true)">
+        <q-btn
+          dense
+          flat
+          size="lg"
+          color="secondary"
+          icon="fas fa-door-open"
+          v-if="!(isAuthenticated && loggedIn)"
+          @click="login(true)"
+        >
           <q-tooltip>Login</q-tooltip>
         </q-btn>
       </q-toolbar>
@@ -93,7 +109,7 @@
       -->
     </q-page-container>
 
-    <q-dialog v-model="alert" >
+    <q-dialog v-model="alert">
       <q-card style="padding: 10px; padding-top: 30px">
         <q-card-section
           class="bg-secondary"
@@ -150,8 +166,8 @@
 
 <script setup>
 import { ref } from "vue";
-import dexieCloud from 'dexie-cloud-addon';
-import Dexie from 'dexie';
+import dexieCloud from "dexie-cloud-addon";
+import Dexie from "dexie";
 
 import { bexBackground } from "quasar/wrappers";
 
@@ -169,12 +185,12 @@ defineOptions({
     this.login();
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.action === 'send.to.agent') {
+      if (request.action === "send.to.agent") {
         me.alert = true;
         // Process the message and update the side panel UI
-        console.log('Received message from background:', request.data);
+        console.log("Received message from background:", request.data);
         // Example: update a DOM element
-        sendResponse({ status: 'Message received by side panel' }); // Send a response back to the background script
+        sendResponse({ status: "Message received by side panel" }); // Send a response back to the background script
       }
     });
 
@@ -265,12 +281,13 @@ defineOptions({
       let me = this;
       this.loading = true;
       this.loggedIn = false;
-      this.$root.$auth0.logout({ returnTo: window.location.origin }).then(() => {
-        me.loading = false;
-        me.loggedIn = false;
-        //location.reload();
-      })
-
+      this.$root.$auth0
+        .logout({ returnTo: window.location.origin })
+        .then(() => {
+          me.loading = false;
+          me.loggedIn = false;
+          //location.reload();
+        });
     },
     async getToken() {
       const accessToken = await this.$root.$auth0.getAccessTokenSilently();
@@ -340,37 +357,40 @@ defineOptions({
 
       db.version(5).stores({
         files:
-          '@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created',
-        environment: '@id, name, scope, link, type, detail, value',
+          "@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created",
+        environment: "@id, name, scope, link, type, detail, value",
         library:
-          '@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created',
-        settings: '@id, name, value',
+          "@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created",
+        settings: "@id, name, value",
         aglets:
-          '@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created',
+          "@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created",
         shares:
-          '@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created',
+          "@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created",
         chats:
-          '@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created',
+          "@id, name, vars, permissions, shared, visibility, data, path, ext, icon, type, updated, created",
       });
 
       const libraryObservable = Dexie.liveQuery(() => db.library.toArray());
 
       const subscription = libraryObservable.subscribe({
         next: () => {
-          console.log('FILE CHANGED!');
+          console.log("FILE CHANGED!");
         },
         error: (error) => console.error(error),
       });
 
       function onKeyChange(db) {
-        console.log('onKeyChange', db);
+        console.log("onKeyChange", db);
       }
 
       await db.open();
-      console.log('RETURNING DB', db);
-      console.log('LIBRARY:', db.library.toArray().then((data) => {
-        console.log('DATA:', data);
-      }));
+      console.log("RETURNING DB", db);
+      console.log(
+        "LIBRARY:",
+        db.library.toArray().then((data) => {
+          console.log("DATA:", data);
+        })
+      );
       return db;
     },
     async login(withPopup) {
@@ -396,19 +416,22 @@ defineOptions({
           me.loading = false;
           me.eventing.emit("login.dismissed");
         };
-        await this.$root.$auth0.loginWithPopup({}, { popup }).then(() => {
-          me.loading = false;
-        }).catch((err) => {
-          me.loading = false;
-          me.eventing.emit("login.dismissed");
-        });
+        await this.$root.$auth0
+          .loginWithPopup({}, { popup })
+          .then(() => {
+            me.loading = false;
+          })
+          .catch((err) => {
+            me.loading = false;
+            me.eventing.emit("login.dismissed");
+          });
       }
       let user = await this.$root.$auth0.user;
       let promise = this.getToken();
 
       promise
         .then(async (token) => {
-          console.log("GOT TOKEN:",token);
+          console.log("GOT TOKEN:", token);
           me.loggedIn = true;
           await this.createDatabase(user);
         })
