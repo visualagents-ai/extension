@@ -36,7 +36,8 @@
         "assets/content.css"
       ],
       "js": [
-        "content.js"
+        "content.js",
+        "dexie.js"
       ],
       "all_frames": true
     }

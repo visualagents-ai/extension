@@ -6,7 +6,7 @@ install:
 
 .PHONY: build
 build:
-	mkdir -p src-bex/dist && quasar build -m bex && cp -r dist/bex/* src-bex/dist/
+	mkdir -p src-bex/dist && quasar build -m bex && cp -r dist/bex/* src-bex/dist/ && cp src-bex/dexie.js src-bex/dist/
 
 .PHONY: format
 format:

@@ -32,7 +32,7 @@ chrome.runtime.sendMessage({text: "what is my tab_id?"}, tabId => {
   const urlParams = new URLSearchParams(window.location.search);
   const tabkey = urlParams.get('tabkey'); // Replace 'paramName' with the actual parameter key
 
-  console.log("STORING TABID["+tabId.tab+":", tabkey);
+  console.log("STORING TABID[" + tabId.tab + ":", tabkey);
   localStorage.setItem(tabkey, tabId.tab)
   chrome.runtime.sendMessage({
     action: "background.tab.id",
@@ -41,8 +41,49 @@ chrome.runtime.sendMessage({text: "what is my tab_id?"}, tabId => {
   });
 })
 
-window.onload = () => {
+window.onload = async () => {
   console.log('CONTENT SCRIPT LOADED');
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabkey = urlParams.get('tabkey'); // Replace 'paramName' with the actual parameter key
+  if (tabkey) {
+    // Fetch and store the tabkey to be pulled from database below
+  }
+  console.log('INJECTED DEXIE AFTER PAGE LOAD');
+  let db = new Dexie("FriendDatabase");
+
+  // DB with single table "friends" with primary key "id" and
+  // indexes on properties "name" and "age"
+  db.version(1).stores({
+    friends: `
+      id,
+      name,
+      age`,
+  });
+
+  console.log('FRIENDS: No data inserted')
+  /*
+      // Now add some values.
+      db.friends.bulkPut([
+        { id: 1, name: "Josephine", age: 21 },
+        { id: 2, name: "Per", age: 75 },
+        { id: 3, name: "Simon", age: 5 },
+        { id: 4, name: "Sara", age: 50, notIndexedProperty: 'foo' }
+      ]).then(async (friends) => {
+        */
+  console.log('FRIENDS4:', await db.friends.where("age").between(0, 25).toArray());
+
+  let f = await db.friends
+    .orderBy("age")
+    .reverse()
+    .toArray();
+  console.log('FRIENDS3:', f);
+  let k = await db.friends.where('name').startsWith("S").keys();
+  console.log('FRIENDS2:', k);
+  /*}
+).catch(err => {
+    console.error(err);
+  });*/
   const iframe = document.createElement('iframe');
   iframe.setAttribute('id', 'cm-frame');
   iframe.setAttribute(
@@ -85,8 +126,8 @@ window.addEventListener('message', function (e) {
     }).then(response => {
       console.log("Message sent successfully:", response);
     }).catch(error => {
-        console.error("Error sending message:", error);
-      });
+      console.error("Error sending message:", error);
+    });
   }
   if (request.action === 'command') {
     chrome.runtime.sendMessage({
@@ -268,7 +309,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   // Got message from background script to get the source.
   if (request.action === "get.source") {
-    console.log("get.source ",request, window.location);
+    console.log("get.source ", request, window.location);
     setTimeout(() => {
 
       // Post message to all content scripts?
@@ -316,9 +357,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }, 1000)
   }
   if (request.action === "execute.command") {
-    console.log('execute.command',request)
-    if(request.message.action === "send.keys") {
-      setTimeout( () => {
+    console.log('execute.command', request)
+    if (request.message.action === "send.keys") {
+      setTimeout(() => {
         let input = document.querySelector(request.message.target);
         input.value = request.message.text;
         const enterEvent = new KeyboardEvent('keydown', {
@@ -332,27 +373,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Dispatch the event on the input element
         input.dispatchEvent(enterEvent);
-      },1000)
+      }, 1000)
     }
-    if(request.message.action === "get.html") {
-      setTimeout( () => {
+    if (request.message.action === "get.html") {
+      setTimeout(() => {
         let html = document.documentElement.innerHTML
-        console.log('COMMAND HTML: ',html);
-      },1000)
+        console.log('COMMAND HTML: ', html);
+      }, 1000)
     }
   }
   if (request.action === "receive.message") {
-    console.log('receive.message',request)
+    console.log('receive.message', request)
   }
   if (request.action === "emit.console.info") {
-    console.log('console.info',request.info)
+    console.log('console.info', request.info)
   }
   if (request.action === "emit.html") {
-    console.log('emit.html:',request)
+    console.log('emit.html:', request)
     let html = request.html.trim();
     if (html.length > 10) {
-      window.postMessage({action: "emit.html",
-        href: request.href, html: html}, "*")
+      window.postMessage({
+        action: "emit.html",
+        href: request.href, html: html
+      }, "*")
     }
   }
   if (request.action === "set.page.text") {

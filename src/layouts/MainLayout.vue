@@ -6,10 +6,10 @@
     <q-page-container style="border-bottom: 1px solid black">
       <q-toolbar class="bg-accent" width="100%">
         <q-space/>
-        <q-btn dense flat size="lg" color="secondary" icon="fas fa-door-closed" v-if="isAuthenticated" @click="logout">
+        <q-btn dense flat size="lg" color="secondary" icon="fas fa-door-closed" v-if="isAuthenticated && loggedIn" @click="logout">
           <q-tooltip>Logout</q-tooltip>
         </q-btn>
-        <q-btn dense flat size="lg" color="secondary" icon="fas fa-door-open" v-if="!isAuthenticated" @click="login(true)">
+        <q-btn dense flat size="lg" color="secondary" icon="fas fa-door-open" v-if="!(isAuthenticated && loggedIn)" @click="login(true)">
           <q-tooltip>Login</q-tooltip>
         </q-btn>
       </q-toolbar>
@@ -207,11 +207,11 @@ defineOptions({
   },
   data() {
     return {
+      loggedIn: false,
       loading: false,
       alert: false,
       pagetext: "NO TEXT",
       chats: [],
-      loading: true,
       authenticated: this.$root.$auth0.isAuthenticated,
       screenWidth: 0,
       screenHeight: 0,
@@ -264,9 +264,11 @@ defineOptions({
     logout() {
       let me = this;
       this.loading = true;
+      this.loggedIn = false;
       this.$root.$auth0.logout({ returnTo: window.location.origin }).then(() => {
         me.loading = false;
-        location.reload();
+        me.loggedIn = false;
+        //location.reload();
       })
 
     },
@@ -333,7 +335,6 @@ defineOptions({
           ",scrollbars=no,resizable=no"
       );
     },
-
     async createDatabase(user) {
       const db = new Dexie(user.email, { addons: [dexieCloud] });
 
@@ -375,6 +376,7 @@ defineOptions({
     async login(withPopup) {
       let me = this;
 
+      this.loading = true;
       const width = me.screenWidth;
       const height = me.screenHeight;
 
@@ -391,9 +393,13 @@ defineOptions({
             ",width=500,height=715,scrollbars=no,resizable=no"
         );
         popup.onclose = function () {
+          me.loading = false;
           me.eventing.emit("login.dismissed");
         };
-        await this.$root.$auth0.loginWithPopup({}, { popup }).catch((err) => {
+        await this.$root.$auth0.loginWithPopup({}, { popup }).then(() => {
+          me.loading = false;
+        }).catch((err) => {
+          me.loading = false;
           me.eventing.emit("login.dismissed");
         });
       }
@@ -403,6 +409,7 @@ defineOptions({
       promise
         .then(async (token) => {
           console.log("GOT TOKEN:",token);
+          me.loggedIn = true;
           await this.createDatabase(user);
         })
         .catch((err) => {
